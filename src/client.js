@@ -16,14 +16,17 @@ import { DEFAULT_PROMPTS, normalizePrompts } from '../lib/shared.js'
 const ENTRY_ID = 'global-prompt'
 /** Settings-section key. */
 const SECTION_ID = 'global-prompt'
+/** Settings-section label, also used to find the native nav row. */
+const SECTION_LABEL = '全局 Prompt'
 /** The one stylesheet this plugin owns. */
 const STYLE_ID = 'dsh-global-prompt/styles'
+/** Namespace for the inline navigation icon. */
+const SVG_NS = 'http://www.w3.org/2000/svg'
 
 const CSS = `
 .dgp-page{display:flex;flex-direction:column;gap:14px;color:inherit}
 .dgp-head{display:flex;flex-direction:column;gap:4px}
 .dgp-title{margin:0;font-size:16px;font-weight:600;line-height:1.3}
-.dgp-desc{margin:0;font-size:12px;line-height:1.55;opacity:.68}
 .dgp-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .dgp-btn{appearance:none;border:1px solid rgba(127,127,127,.35);background:transparent;color:inherit;border-radius:6px;padding:4px 10px;font:inherit;font-size:12px;line-height:1.5;cursor:pointer}
 .dgp-btn:hover:not(:disabled){background:rgba(127,127,127,.12)}
@@ -40,7 +43,6 @@ const CSS = `
 .dgp-text{width:100%;box-sizing:border-box;resize:vertical;min-height:84px;border:1px solid rgba(127,127,127,.3);border-radius:6px;background:transparent;color:inherit;padding:8px;font:inherit;font-size:12px;line-height:1.55}
 .dgp-text:focus{outline:2px solid rgba(90,140,255,.5);outline-offset:-1px}
 .dgp-text:disabled{opacity:.6;cursor:not-allowed}
-.dgp-status{font-size:11px;opacity:.62;margin-left:auto}
 .dgp-error{margin:0;font-size:12px;color:#c0392b;line-height:1.5}
 .dgp-empty{border:1px dashed rgba(127,127,127,.35);border-radius:8px;padding:18px;text-align:center;font-size:12px;line-height:1.6;opacity:.65}
 `
@@ -52,11 +54,56 @@ function newPromptId() {
   return `prompt-${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
-/** Enabled-entry count for the status line. */
-function enabledCount(prompts) {
-  let count = 0
-  for (const item of prompts) if (item.enabled !== false) count += 1
-  return count
+/** Build the section icon the shell does not offer a slot for. */
+function createNavIcon(reference) {
+  const svg = document.createElementNS(SVG_NS, 'svg')
+  svg.setAttribute('viewBox', '0 0 24 24')
+  svg.setAttribute('width', '16')
+  svg.setAttribute('height', '16')
+  svg.setAttribute('fill', 'none')
+  svg.setAttribute('stroke', 'currentColor')
+  svg.setAttribute('stroke-width', '1.8')
+  svg.setAttribute('stroke-linecap', 'round')
+  svg.setAttribute('stroke-linejoin', 'round')
+  svg.setAttribute('aria-hidden', 'true')
+  const className = reference.getAttribute('class')
+  if (className !== null) svg.setAttribute('class', className)
+  for (const d of [
+    'M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z',
+    'M7 8h10',
+    'M7 12h6',
+  ]) {
+    const path = document.createElementNS(SVG_NS, 'path')
+    path.setAttribute('d', d)
+    svg.appendChild(path)
+  }
+  return svg
+}
+
+/**
+ * The settings shell hardcodes a gear for unknown section ids and exposes no
+ * icon option. Swap that one glyph for a section-specific one; the observer
+ * re-applies after a panel remount, and the data marker stops the swap from
+ * looping.
+ *
+ * @param ctx - client Cordis context.
+ */
+function installNavIcon(ctx) {
+  const scan = () => {
+    for (const button of document.querySelectorAll('[role="dialog"] nav button')) {
+      if (button.querySelector('svg[data-dsh-global-prompt-icon]') !== null) continue
+      if ((button.textContent ?? '').trim() !== SECTION_LABEL) continue
+      const original = button.querySelector('svg')
+      if (original === null) continue
+      const icon = createNavIcon(original)
+      icon.setAttribute('data-dsh-global-prompt-icon', '')
+      original.replaceWith(icon)
+    }
+  }
+  const observer = new MutationObserver(scan)
+  observer.observe(document.body, { childList: true, subtree: true })
+  ctx.effect(() => () => observer.disconnect(), 'global-prompt: navigation icon')
+  scan()
 }
 
 /** The services the Settings section needs. */
@@ -144,7 +191,7 @@ export function apply(ctx) {
     const state = React.useSyncExternalStore(subscribe, getView, getView)
     const [drafts, setDrafts] = React.useState({})
     const prompts = state.prompts
-    const disabled = state.writable !== true
+    const disabled = state.writable !== true || state.saving > 0
 
     const setDraft = (id, value) => {
       setDrafts((previous) => ({ ...previous, [id]: value }))
@@ -191,29 +238,13 @@ export function apply(ctx) {
       if (saved) clearDraft(item.id)
     }
 
-    const status =
-      state.status === 'loading'
-        ? '加载中…'
-        : state.writable !== true
-          ? '只读：设置服务不可用'
-          : state.error !== ''
-            ? '保存失败'
-            : state.saving > 0
-              ? '保存中…'
-              : '已保存'
-
     const children = []
 
     children.push(
       React.createElement(
         'div',
         { className: 'dgp-head', key: 'head' },
-        React.createElement('h2', { className: 'dgp-title' }, '全局 Prompt'),
-        React.createElement(
-          'p',
-          { className: 'dgp-desc' },
-          '所有对话共用。列表顺序就是注入顺序，未启用的条目不参与合并；全部禁用或为空时不注入任何内容。',
-        ),
+        React.createElement('h2', { className: 'dgp-title' }, SECTION_LABEL),
       ),
     )
 
@@ -230,11 +261,6 @@ export function apply(ctx) {
             onClick: add,
           },
           '+ 新增 Prompt',
-        ),
-        React.createElement(
-          'span',
-          { className: 'dgp-status', role: 'status' },
-          `${enabledCount(prompts)} 条启用 · ${status}`,
         ),
       ),
     )
@@ -254,7 +280,7 @@ export function apply(ctx) {
         React.createElement(
           'div',
           { className: 'dgp-empty', key: 'empty' },
-          '还没有 Prompt。点“新增 Prompt”开始；全部禁用或为空时不会注入任何内容。',
+          '还没有 Prompt。',
         ),
       )
     } else {
@@ -282,7 +308,6 @@ export function apply(ctx) {
                     onChange: () => toggle(item.id),
                   }),
                   React.createElement('span', { className: 'dgp-index' }, `#${index + 1}`),
-                  React.createElement('span', null, item.enabled === false ? '已禁用' : '启用'),
                 ),
                 React.createElement(
                   'div',
@@ -328,7 +353,7 @@ export function apply(ctx) {
                 value: drafts[item.id] ?? item.text,
                 disabled,
                 rows: 4,
-                placeholder: '输入一段会注入到所有对话的 system prompt…',
+                placeholder: '输入 system prompt',
                 onChange: (event) => setDraft(item.id, event.target.value),
                 onBlur: () => void commitText(item),
               }),
@@ -360,9 +385,11 @@ export function apply(ctx) {
         name: 'settings.section',
         id: SECTION_ID,
         order: 40,
-        label: '全局 Prompt',
+        label: SECTION_LABEL,
       },
       Page,
     ),
   )
+
+  installNavIcon(ctx)
 }

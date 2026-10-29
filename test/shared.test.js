@@ -10,6 +10,7 @@ test('the shipped list seeds two enabled prompts', () => {
   assert.equal(DEFAULT_PROMPTS[1].enabled, true)
   assert.match(DEFAULT_PROMPTS[0].text, /^## 交付纪律/)
   assert.match(DEFAULT_PROMPTS[1].text, /^## 输出要求/)
+  assert.match(DEFAULT_PROMPTS[1].text, /禁止用“·”、破折号、竖线、斜杠等连接符/)
 })
 
 test('merge keeps list order and skips disabled, empty, and malformed entries', () => {

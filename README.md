@@ -6,9 +6,9 @@ section, so it applies to every conversation without repeating instructions.
 
 The page starts with two editable entries: a "delivery discipline" prompt that
 tells the agent to do only what was asked and answer in the requested medium,
-and a "terse output" prompt that forbids padding, lyricism, `·` separators,
-decorative copy, and repetition. Both are ordinary list data: edit them, disable
-them, or delete them.
+and a "terse output" prompt that forbids padding, lyricism, connector-symbol
+stacking, decorative copy, and repetition. Both are ordinary list data: edit them,
+disable them, or delete them.
 
 ## Requirements
 
