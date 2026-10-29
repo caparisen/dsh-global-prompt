@@ -1,0 +1,75 @@
+{
+  "name": "@citisen/dsh-global-prompt",
+  "version": "0.1.0",
+  "description": "DeepSeek Harness plugin: a Settings page for user-defined global system prompts, merged into every conversation",
+  "type": "module",
+  "license": "MIT",
+  "author": "caparisen",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caparisen/dsh-global-prompt.git"
+  },
+  "homepage": "https://github.com/caparisen/dsh-global-prompt#readme",
+  "bugs": {
+    "url": "https://github.com/caparisen/dsh-global-prompt/issues"
+  },
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "src",
+    "scripts",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build-client.mjs",
+    "test": "node --test",
+    "check": "node scripts/build-client.mjs --check && node --check lib/client.js",
+    "prepack": "npm run check"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.18.2"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "deepseek",
+    "dsh",
+    "dsh-plugin",
+    "dsh-bundle",
+    "system-prompt",
+    "global-prompt",
+    "prompt-management",
+    "settings"
+  ]
+}

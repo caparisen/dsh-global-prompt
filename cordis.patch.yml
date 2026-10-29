@@ -1,0 +1,8 @@
+# @citisen/dsh-global-prompt — bundle layer.
+#
+# One host row: it owns the `global-prompt` settings namespace, exposes the
+# Settings page to the browser half, and contributes one global system-prompt
+# section assembled from the enabled entries.
+- insert:
+    - id: global-prompt
+      name: '@citisen/dsh-global-prompt'
