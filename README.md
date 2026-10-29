@@ -4,10 +4,11 @@ A DeepSeek Harness (dsh) plugin that adds a **Global Prompt** page to Settings.
 Every enabled entry is merged, in list order, into one global system-prompt
 section, so it applies to every conversation without repeating instructions.
 
-The page starts with one editable entry: a "delivery discipline" prompt that
-tells the agent to do only what was asked, answer in the requested medium, and
-avoid unrequested files, documents, and extras. The entry is ordinary list data:
-edit it, disable it, or delete it.
+The page starts with two editable entries: a "delivery discipline" prompt that
+tells the agent to do only what was asked and answer in the requested medium,
+and a "terse output" prompt that forbids padding, lyricism, `·` separators,
+decorative copy, and repetition. Both are ordinary list data: edit them, disable
+them, or delete them.
 
 ## Requirements
 
@@ -46,7 +47,7 @@ Local development installs can point at a tarball or folder instead:
 
 ```sh
 npm pack
-dsh plugin --profile <profile> add ./citisen-dsh-global-prompt-0.1.0.tgz
+dsh plugin --profile <profile> add ./citisen-dsh-global-prompt-*.tgz
 ```
 
 ## Use

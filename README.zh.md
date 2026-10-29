@@ -3,9 +3,9 @@
 一个 DeepSeek Harness（dsh）插件，在设置里增加 **Global Prompt / 全局 Prompt**
 页面：所有启用的条目按列表顺序合并成一段全局 system prompt，对所有对话生效。
 
-首次安装的列表里预置了一条“交付纪律”prompt，用来约束 agent 只做明确要求的事、
-用要求的交付形式、不擅自增加文件/文档/周边内容。它只是普通列表项：可以改、可以
-禁用、可以删除。
+首次安装的列表里预置两条 prompt：一条“交付纪律”，约束 agent 只做明确要求的事、用
+要求的交付形式；一条“输出要求”，禁止注水、抒情、用“·”连接、装饰性文字和重复。
+它们都是普通列表项：可以改、可以禁用、可以删除。
 
 ## 要求
 
@@ -42,7 +42,7 @@ dsh plugin --profile <profile> add @citisen/dsh-global-prompt
 
 ```sh
 npm pack
-dsh plugin --profile <profile> add ./citisen-dsh-global-prompt-0.1.0.tgz
+dsh plugin --profile <profile> add ./citisen-dsh-global-prompt-*.tgz
 ```
 
 ## 使用

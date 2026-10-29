@@ -3,10 +3,13 @@ import test from 'node:test'
 
 import { DEFAULT_PROMPTS, mergePrompts, normalizePrompts } from '../lib/shared.js'
 
-test('the shipped list seeds one enabled prompt', () => {
-  assert.equal(DEFAULT_PROMPTS.length, 1)
+test('the shipped list seeds two enabled prompts', () => {
+  assert.equal(DEFAULT_PROMPTS.length, 2)
+  assert.deepEqual(DEFAULT_PROMPTS.map((prompt) => prompt.id), ['delivery-discipline', 'terse-output'])
   assert.equal(DEFAULT_PROMPTS[0].enabled, true)
+  assert.equal(DEFAULT_PROMPTS[1].enabled, true)
   assert.match(DEFAULT_PROMPTS[0].text, /^## 交付纪律/)
+  assert.match(DEFAULT_PROMPTS[1].text, /^## 输出要求/)
 })
 
 test('merge keeps list order and skips disabled, empty, and malformed entries', () => {

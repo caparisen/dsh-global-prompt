@@ -1,6 +1,6 @@
 {
   "name": "@citisen/dsh-global-prompt",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DeepSeek Harness plugin: a Settings page for user-defined global system prompts, merged into every conversation",
   "type": "module",
   "license": "MIT",
